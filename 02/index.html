@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    .grid-container{
+        display: grid;
+        grid-template-columns:32% 32% 17% 17%;
+        grid-template-rows:100px 750px;
+        grid-gap:10px;
+        background-color: #2196F3;
+        padding: 10px;
+    }
+    .grid-container>div{
+        background-color:blanchedalmond;
+        
+        padding: 20px 10px;
+        
+        
+    }
+    .item1{
+        grid-column:1/5;
+        grid-row: 1/span 1;
+        text-align:center;
+        font-size: 50px;
+    }
+    .item2{
+        grid-column: 1/span 2;
+        grid-row: 2/3;
+    }
+    .item3{
+        grid-column: 3/span 2;
+        grid-row:2/3;
+    }
+</style>
+<script>
+    function get(x,y)
+    {
+        var div=document.createElement('div');
+        div.innerHTML=document.getElementById(y).innerHTML;
+        var bo=document.getElementById("demo");
+        bo.insertBefore(div,bo.lastChild);
+        x.style.color="red";
+    }
+    function getcolor(x)
+    {var bo=document.getElementById("demo");
+        bo.removeChild(bo.firstChild);
+        x.style.color="black";
+        
+    }
+
+</script>
+
+    
+</head>
+<body>
+    <div style="display: none;" id="Windows程序设计1"><h2>教师：赵卫中<br>教室：N207<br>周数：1-19周<br>时间：周一1-2节</h2></div>
+    <div style="display: none;" id="Web程序设计1"><h2>教师：涂新辉<br>教室：N108<br>周数：1-18周双<br>时间：周二1-2节</h2></div>
+    <div style="display: none;" id="人工智能"><h2>教师：戴上平<br>教室：N113<br>周数：1-19周<br>时间：周三1-2节</h2></div>
+    <div style="display: none;" id="信息检索技术2"><h2>教师：张茂元<br>教室：N528<br>周数：3-16周双<br>时间：周四1-2节</h2></div>
+    <div style="display: none;" id="操作系统2"><h2>教师：喻莹<br>教室：N524<br>周数：1-19周<br>时间：周五1-2节</h2></div>
+    <div style="display: none;" id="微机原理与接口技术1"><h2>教师：陈怡<br>教室：N535<br>周数：1-19周<br>时间：周二3-4节</h2></div>
+    <div style="display: none;" id="操作系统1"><h2>教师：喻莹<br>教室：N213<br>周数：1-19周<br>时间：周三3-4节</h2></div>
+    <div style="display: none;" id="习近平新时代中国特色社会主义思想概论"><h2>教师：张艳斌<br>教室：N215<br>周数：1-19周<br>时间：周四3-4节</h2></div>
+    <div style="display: none;" id="Web程序设计2"><h2>教师：涂新辉<br>教室：N108<br>周数：1-19周<br>时间：周四5-6节</h2></div>
+    <div style="display: none;" id="专业英语"><h2>教师：赵卫中<br>教室：N113<br>周数：1-19周<br>时间：周一7-8节</h2></div>
+    <div style="display: none;" id="信息检索技术1"><h2>教师：张茂元<br>教室：N528<br>周数：1-19周<br>时间：周二7-8节</h2></div>
+    <div style="display: none;" id="Windows程序设计2"><h2>教师：赵卫中<br>教室：N522<br>周数：1-18周双<br>时间：周三7-8节</h2></div>
+    <div style="display: none;" id="青少年网络心理学"><h2>教师：牛更枫<br>教室：8216<br>周数：1-19周<br>时间：周四7-8节</h2></div>
+    <div style="display: none;" id="电子商务政策法规"><h2>教师：程蕾<br>教室：8216<br>周数：11-19周<br>时间：周三9-10节</h2></div>
+    <div style="display: none;" id="解码外交——外交学与中国外交（通核）"><h2>教师：胡宗山<br>教室：N327<br>周数：2-19周<br>时间：周一11-12节</h2></div>
+    <div style="display: none;" id="无"><h2>暂无课程信息！</h2></div>
+    
+    
+    
+    
+    <div class="grid-container">
+        <div class="item1">杨莹的课表</div>
+        <div class="item2">
+            <table border="1" width='1150' height='700'>
+        
+                <tr align="center">
+                    <th width='100'>&nbsp;</th>
+                    <th width='100'>周一</th>
+                    <th width='100'>周二</th>
+                    <th width='100'>周三</th>
+                    <th width='100'>周四</th>
+                    <th width='100'>周五</th>
+                    <th width='100'>周六</th>
+                    <th width='100'>周日</th>
+                </tr>
+                <tr align="center">
+                    <th>1（8:00）</th>
+                    <td rowspan="2" onmouseover="get(this,'Windows程序设计1')" onmouseout="getcolor(this)" onclick="">Windows程序设计</td>
+                    <td rowspan="2" onmouseover="get(this,'Web程序设计1')" onmouseout="getcolor(this)">Web程序设计</td>
+                    <td rowspan="2" onmouseover="get(this,'人工智能')" onmouseout="getcolor(this)">人工智能</td>
+                    <td rowspan="2" onmouseover="get(this,'信息检索技术2')" onmouseout="getcolor(this)">信息检索技术</td>
+                    <td rowspan="2" onmouseover="get(this,'操作系统2')" onmouseout="getcolor(this)">操作系统</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                </tr>
+                <tr align="center">
+                    <th>2</th>
+                </tr>
+                <tr align="center">
+                    <th>3(10:10)</th>
+                    <td rowspan="2" onmouseover="get(this,'微机原理与接口技术1')" onmouseout="getcolor(this)">微机原理与接口技术</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'操作系统1')" onmouseout="getcolor(this)">操作系统</td>
+                    <td rowspan="2" onmouseover="get(this,'习近平新时代中国特色社会主义思想概论')" onmouseout="getcolor(this)">习近平新时代中国特色社会主义思想概论</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                   
+                </tr>
+                <tr align="center">
+                    <th>4</th>
+                </tr>
+                <tr align="center">
+                    <th>5(14:00）</th>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'Web程序设计2')" onmouseout="getcolor(this)">Web程序设计</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                </tr>
+                <tr align="center">
+                    <th>6</th>
+                </tr>
+                <tr align="center">
+                    <th>7(16:10)</th>
+                    <td rowspan="2" onmouseover="get(this,this.innerHTML)" onmouseout="getcolor(this)">专业英语</td>
+                    <td rowspan="2" onmouseover="get(this,'信息检索技术1')" onmouseout="getcolor(this)">信息检索技术</td>
+                    <td rowspan="2" onmouseover="get(this,'Windows程序设计2')" onmouseout="getcolor(this)">Windows程序设计</td>
+                    <td rowspan="2" onmouseover="get(this,this.innerHTML)" onmouseout="getcolor(this)">青少年网络心理学</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                </tr>
+                <tr align="center">
+                    <th>8</th>
+                </tr>
+                <tr align="center">
+                    <th>9(18:30)</th>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,this.innerHTML)" onmouseout="getcolor(this)">电子商务政策法规</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                </tr>
+                <tr align="center">
+                <th>10</th>
+                </tr>
+                <tr align="center">
+                    <th>11(20:15)</th>
+                    <td rowspan="2" onmouseover="get(this,this.innerHTML)" onmouseout="getcolor(this)">解码外交——外交学与中国外交（通核）</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                    <td rowspan="2" onmouseover="get(this,'无')" onmouseout="getcolor(this)">&nbsp;</td>
+                </tr>
+                <tr align="center">
+                    <th>12</th>
+                </tr>
+            
+            </table>
+        </div>
+        <div class="item3" id="demo"></div>
+    </div>
+  
+    
+</body>
+</html>
