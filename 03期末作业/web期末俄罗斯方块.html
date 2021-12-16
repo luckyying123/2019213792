@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        canvas{
+            border: 3px solid black;
+            background-repeat: no-repeat;
+            background-size: 100% auto;
+            background-position: 0 100%;
+            background-color:white;
+           }
+           .grid-container{
+            display: grid;
+            grid-template-rows:700;
+            grid-template-columns:28% 28% 40%;
+            grid-gap:10px;
+           /* background-color: #7e868b;*/
+            padding: 10px;
+            background-color:rgb(128, 170, 170)
+            
+        }
+        .grid-container>div{
+           
+            padding: 20px 0;
+            font-size: 50px;
+        }
+        
+        .item1{
+            text-align:left;
+            grid-column:1/span 1;
+        }
+        .item2{
+            text-align:center;
+            grid-column:2/span 1;
+
+        }
+        .item3{
+            text-align:left;
+            grid-column:3/span 1;
+
+        }
+    </style>
+</head>
+<body onload="startGame()">
+    <div class="grid-container">
+        <div class="item1" id="1">
+        </div>
+        <div class="item2" id="2" style="display: none;">
+            <div id="text" style='color: red;font-size: 30px;'>当前分数：0</div>
+    <button onclick="start2()" style="width:120px;height:40px;font-size: 20px">简单</button>
+    <br>
+    <button onclick="start1()"style="width:120px;height:40px;font-size: 20px">中等</button>
+    <br>
+    <button onclick="start()"style="width:120px;height:40px;font-size: 20px">困难</button>
+    <br>
+    <button onmousedown="moveup()">UP</button><br>
+    <button onmousedown="move('left')">LEFT</button>
+    <button onmousedown="move('right')">RIGHT</button><br>
+    <button onmousedown="move('down')" onmouseup="clearmove()" ontouchstart="move('down')">DOWN</button>
+    <br>
+    <button  onmousedown="pause()" style="width:120px;height:40px;font-size: 20px">暂停</button>
+    <button  onmousedown="next()" style="width:120px;height:40px;font-size: 20px">继续</button>
+    <button  onmousedown="over()" style="width:120px;height:40px;font-size: 20px">重新开始</button>
+        </div>
+        <div class="item3" id="3" style="display: none;">
+            <span style="font-size: 20px">操作说明：</span>
+            <br>
+            <p style="font-size: 20px">"上"对方块进行旋转变换</p>
+            <p style="font-size: 20px">"下"加速方块的下落</p>
+            <p  style="font-size: 20px">"左"对方块进行左移</p>
+            <p  style="font-size: 20px"> "右"对方块进行右移</p>
+            <p style="font-size: 20px">可用键盘方向键进行控制，也可以是使用屏幕方向键进行控制</p>
+
+        </div>
+    </div>
+    
+   
+    <script>
+    
+        let text = document.getElementById('text')
+        let n= 40 //方块的边长
+        let speed = 1000 //更新速度
+        let grade = 0
+        let restartFlag = false
+        let timer = null
+        let CGraphPositionList = []
+        let curtype = undefined
+        let transformNum = 0
+        let blockGraph = Array(12)
+        let beforeUpdateGraph = []
+        function startGame() {
+              
+              myGameArea.start1();
+              
+           }
+            var myGameArea = {
+            canvas : document.createElement("canvas"),
+            canvas1:document.createElement("canvas"),
+            start1 : function() {
+                this.canvas.width =12*n;
+                this.canvas.height =20*n;
+                this.canvas1.width=6*n;
+                this.canvas1.height=6*n;
+                this.context = this.canvas.getContext("2d");
+                this.cxt=this.canvas1.getContext("2d");
+                this.context.fillStyle="red";
+                this.cxt.fillStyle="red";
+                this.context.strokeStyle="black";
+                this.cxt.strokeStyle="black";
+                var rect1={x:175,y:320,w:150,h:60};
+                this.context.strokeRect(rect1.x,rect1.y,rect1.w,rect1.h);
+                this.context.font="30px Arial"; 
+                this.context.fillText("开始游戏",186,355);
+                this.canvas.style.backgroundImage="url(web期末图片/俄罗斯方块背景图.png)";
+                this.canvas1.style.backgroundImage="url(web期末图片/画布2.png)";
+                document.getElementById("1").insertBefore(this.canvas, document.getElementById("1").childNodes[0]);
+                document.getElementById("2").insertBefore(this.canvas1,document.getElementById("2").childNodes[0]);
+            
+               
+                this.canvas.onclick=function(e){                             //给canvas添加点击事件
+                  e=e||event;                                                //获取事件对象
+                  var x=e.clientX;                                           //获取事件在canvas中发生的位置
+                  var y=e.clientY;                                                         
+                  if(x>=rect1.x+20&&x<=rect1.x+rect1.w+20&&y>=rect1.y+35&&y<=rect1.y+rect1.h+35)
+                  {  //如果事件位置在矩形区域中
+                   
+                    myGameArea.clear();
+                    e.target.style.backgroundImage="url(web期末图片/俄罗斯方块背景图1.png)";
+                    document.getElementById("2").style.display="block" 
+                    document.getElementById("3") .style.display="block"
+                   
+                }
+                 }
+            },
+    
+            clear : function() {                                                        //清空整个画布1
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);    
+            },
+            clear1 : function() {                                                        //清空整个画布2
+                this.cxt.clearRect(0, 0, this.canvas1.width, this.canvas1.height);    
+            },
+            drawRect : function(position,width){                                     //给第一个画布画小方块
+            this.context=this.canvas.getContext("2d");
+            this.context.beginPath();
+            this.context.rect(position[0],position[1],width,width);
+            this.context.fill();
+            this.context.stroke();
+            },
+            drawRect1:function(position,width){                                   //给第二个画布画小方块
+                this.ctx=this.canvas1.getContext("2d");
+                this.ctx.beginPath();
+                this.ctx.rect(position[0],position[1],width,width);
+                this.ctx.fill();
+                this.ctx.stroke();
+            },
+           clearRect : function(position,width){                                    //清空第一个画布的小方块
+            this.context=this.canvas.getContext("2d");
+            this.context.clearRect(position[0]*n-1,position[1]*n-1,width+2,width+2)
+            },
+            clearRect1 : function(position,width){                                  //清空第二个画布的小方块
+            this.cxt=this.canvas.getContext("2d");
+            this.cxt.clearRect1(position[0]*n-1,position[1]*n-1,width+2,width+2)
+            }
+        }
+        for(let i = 0;i<blockGraph.length;i++){               //每一个blockgraph设为20位的数组
+            blockGraph[i] = Array(20)
+        }
+      
+        function ramdomRectType(){                          //随机产生方块组合的类型，math.random()的范围为[0,1)，所以整体范围为[1,8)
+            return Math.floor((Math.random()*7)+1)
+        }
+        function randomXposition(){                            //随机产生开始下落的位置,整体范围是[0,12)
+            return Math.floor(Math.random()*12)
+        }
+        function drawGraph(positionList){                      //画联合起来的小方块，pointlist表示4个小方块组成的一个整体的位置表
+            if(positionList.length===0){                       //每一个小方块的位置有两位
+                return
+            }
+            for(let item of positionList){
+               let x= item[0]*n
+               let y= item[1]*n
+               let position = [x,y]
+              myGameArea.drawRect(position,n)
+            }
+        }
+        function drawGraph1(positionList){                   //同上，给画布2画
+            if(positionList.length===0){
+                return
+            }
+            for(let item of positionList){
+               let x= item[0]*n
+               let y= item[1]*n
+               let position = [x,y]
+              myGameArea.drawRect1(position,n)
+            }
+        }
+        function isOut(position,xOry){                  //判断横纵坐标是否越界，xory表示你要判断x还是y，如果是0表示你要判断x，1表示你要判断y
+            if(xOry===0){
+                if(position<0||position>11)
+                {
+                    return true
+                }
+                else
+                {
+                    return false
+                }
+            }
+            else{
+                if(position<0||position>19){
+                    return true
+                }
+                else{
+                    return false
+                }
+            }
+        }
+        let positionList1=[];
+        let curtype1=ramdomRectType() ;
+      
+        function randomRectShape(){                     //随机产生方块形状
+            let rposition = randomXposition()            //得到随机产生的位置
+             curtype=curtype1;                           //实例的类型等于随机产生的类型
+            transformNum = 0                               //转变的次数
+            let positionList = []
+            let one = []                                 //由4个方块组成
+            let two = []
+            let three = []
+            let four = []
+            let one1 = []                                 //由4个方块组成
+            let two1 = []
+            let three1 = []
+            let four1 = []
+            switch(curtype){
+                case 1:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition+2,0]
+                        two = [rposition,1]
+                        three = [rposition+1,1]
+                        four = [rposition+2,1]
+                       
+                    }
+                    break;
+                case 2:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition,0]
+                        two = [rposition,1]
+                        three = [rposition+1,1]
+                        four = [rposition+2,1]
+                       
+                    }
+                    break;
+                case 3:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition+1,0]
+                        two = [rposition+2,0]
+                        three = [rposition,1]
+                        four = [rposition+1,1]
+                       
+                    }
+                    break;
+                case 4:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition,0]
+                        two = [rposition+1,0]
+                        three = [rposition+1,1]
+                        four = [rposition+2,1]
+                       
+                    }
+                    break;
+                case 5:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition+1,0]
+                        two = [rposition,1]
+                        three = [rposition+1,1]
+                        four = [rposition+2,1]
+                       
+                    }
+                    break;
+                case 6:
+                    if(isOut(rposition+1,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition,0]
+                        two = [rposition+1,0]
+                        three = [rposition,1]
+                        four = [rposition+1,1]
+                       
+                    }
+                    break;
+                case 7:
+                    if(isOut(rposition+3,0)){
+                        return randomRectShape()
+                    }else{
+                        one = [rposition,0]
+                        two = [rposition+1,0]
+                        three = [rposition+2,0]
+                        four = [rposition+3,0]
+                      
+                    }
+                    break;
+            }
+            positionList1=[];
+            positionList.push(one,two,three,four)
+           
+            let type = ramdomRectType()              
+            curtype1 = type  
+            switch(type){
+                case 1:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                      
+                        one1 = [1+2,1]
+                        two1 = [1,2]
+                        three1 = [1+1,2]
+                        four1 = [1+2,2]
+                    }
+                    break;
+                case 2:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                       
+                        one1 = [1,1]
+                        two1= [1,2]
+                        three1 = [1+1,2]
+                        four1 = [1+2,2]
+                    }
+                    break;
+                case 3:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                       
+                        one1= [1+1,1]
+                        two1 = [1+2,1]
+                        three1 = [1,2]
+                        four1 = [1+1,2]
+                    }
+                    break;
+                case 4:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                       
+                        one1 = [1,1]
+                        two1= [1+1,1]
+                        three1 = [1+1,2]
+                        four1 = [1+2,2]
+                    }
+                    break;
+                case 5:
+                    if(isOut(rposition+2,0)){
+                        return randomRectShape()
+                    }else{
+                       
+                        one1 = [1+1,2]
+                        two1 = [1,3]
+                        three1 = [1+1,3]
+                        four1 = [1+2,3]
+                    }
+                    break;
+                case 6:
+                    if(isOut(rposition+1,0)){
+                        return randomRectShape()
+                    }else{
+                       
+                        one1 = [2,2]
+                        two1 = [2+1,2]
+                        three1 = [2,3]
+                        four1 = [2+1,3]
+                    }
+                    break;
+                case 7:
+                    if(isOut(rposition+3,0)){
+                        return randomRectShape()
+                    }else{
+                       
+                        one1 = [1,2]
+                        two1 = [1+1,2]
+                        three1 = [1+2,2]
+                        four1 = [1+3,2]
+                    }
+                    break;
+            }  
+            positionList1.push(one1,two1,three1,four1)
+           return positionList
+        }
+        /*function clearRect(position,width){
+            ctx.clearRect(position[0]*n-1,position[1]*n-1,width+2,width+2)
+        }*/
+        function clearGraph(CGraphPositionList){        //清空拼起来的图
+            if(CGraphPositionList.length===0){
+                return 
+            }
+            for(let item of CGraphPositionList){
+               myGameArea.clearRect(item,n)
+            }
+        }
+        function clearGraph1(CGraphPositionList){          //清空画布2拼起来的图
+            if(CGraphPositionList.length===0){
+                return 
+            }
+            for(let item of CGraphPositionList){
+               myGameArea.clearRect1(item,n)
+            }
+        }
+        function clearGraphList(){            
+            let graphList = []
+            for(let i = 0;i< blockGraph.length;i++){
+                for(let j =0;j< blockGraph[i].length;j++){
+                    if(blockGraph[i][j]===1){
+                        graphList.push([i,j])
+                    }
+                }
+            }
+            clearGraph(graphList)
+        }
+       
+        function isTouchOtherBlock(position){                      
+            return blockGraph[position[0]][position[1]] === 1
+        }
+        function updateBlockGraph(graphPositionList){            //更新画布
+            for(let i =0;i<graphPositionList.length;i++){
+                let x = parseInt(graphPositionList[i][0]) 
+                let y = parseInt(graphPositionList[i][1])
+                blockGraph[x][y] = 1
+            }
+            let transformArray = []
+            for(let i=0;i<20;i++){
+                let arr = blockGraph.map((item)=>{
+                    return item[i]
+                })
+                transformArray.push(arr)
+            }
+            let flagList = []
+            for(let i in transformArray){
+                let flag = 1
+                for(let j in transformArray[i]){
+                   if(transformArray[i][j]!==1){
+                        flag = 0
+                        break
+                   }
+                }
+                flagList.push(flag)
+            }
+            let score = flagList.filter((item)=>{
+                return item === 1
+            })
+            if(score.length>0){
+                grade = grade + score.length
+                text.innerHTML = '当前分数：'+grade
+                for(let i in transformArray){
+                    if(flagList[i]===1){
+                        for(let j in transformArray[i]){
+                            transformArray[i][j]=undefined
+                        }
+                    }
+                }
+                let hasBlockList = []
+                for(let i in transformArray){
+                    let flagOfHasBlock = 0
+                    for(let j in transformArray[i]){
+                        if(transformArray[i][j]!==undefined){
+                            flagOfHasBlock = 1
+                            break
+                        }
+                    }
+                    hasBlockList.push(flagOfHasBlock)
+                }
+                for(let i = transformArray.length -1 ;i>=0;i--){
+                    if(hasBlockList[i]===1){
+                        let count = 0
+                        for(let j = i ;j<19;j++){
+                            if(hasBlockList[j+1]===0){
+                                count++
+                            }else{
+                                break
+                            }
+                        }
+                        if(count===0){
+                            continue
+                        }
+                        for(let j in transformArray[i]){
+                            if(transformArray[i][j]===1){
+                                transformArray[i][j] = undefined
+                                transformArray[i+count][j] = 1
+                            }
+                        }
+                        hasBlockList[i]=0
+                        hasBlockList[i+count]=1
+                    }
+                }
+                let newBlockGraph = []
+                for(let i=0;i<12;i++){
+                    let arr = transformArray.map((item)=>{
+                        return item[i]
+                    })
+                    newBlockGraph.push(arr)
+                }
+                clearGraphList()
+                blockGraph = newBlockGraph
+            }
+        }
+        function movePosition(CGraphPositionList,direct){       //移位置
+            switch(direct){
+                case 'left':
+                    let minL = Math.min(...CGraphPositionList.map((item)=>{
+                        return item[0]
+                    }))
+                    if(minL-1<0){
+                        return CGraphPositionList
+                    }else{
+                        let changeFlag = true
+                        let next = CGraphPositionList.map((item)=>{
+                            return [item[0]-1,item[1]]
+                        })
+                        for(let item of next){
+                            if(isTouchOtherBlock(item)){
+                                changeFlag = false
+                            }
+                        }
+                        if(changeFlag){
+                            return next
+                        }else{
+                            return CGraphPositionList
+                        }
+                    }
+                    break;
+                case 'right':
+                    let maxR = Math.max(...CGraphPositionList.map((item)=>{
+                        return item[0]
+                    }))
+                    if(maxR+1>11){
+                        return CGraphPositionList
+                    }else{
+                        let changeFlag = true
+                        let next = CGraphPositionList.map((item)=>{
+                            return [item[0]+1,item[1]]
+                        })
+                        for(let item of next){
+                            if(isTouchOtherBlock(item)){
+                                changeFlag = false
+                            }
+                        }
+                        if(changeFlag){
+                            return next
+                        }else{
+                            return CGraphPositionList
+                        }
+                    }
+                    break;
+                case 'down':
+                    let maxD = Math.max(...CGraphPositionList.map((item)=>{
+                        return item[1]
+                    }))
+                    if(maxD>18){
+                        updateBlockGraph(CGraphPositionList)
+                        restartFlag = true
+                        return CGraphPositionList
+                    }else{
+                        let changeFlag = true
+                        let next = CGraphPositionList.map((item)=>{
+                            
+                            return [item[0],item[1]+1]
+                        })
+                        for(let item of next){
+                            if(isTouchOtherBlock(item)){
+                                changeFlag = false
+                            }
+                        }
+                        if(changeFlag){
+                            return next
+                        }else{
+                            updateBlockGraph(CGraphPositionList)
+                            restartFlag = true
+                            return CGraphPositionList
+                        }
+                    }
+                    break;
+                  
+                    
+                    
+            }
+        }
+        function checkOver(positionList){
+            for(let i in positionList){
+                let x = positionList[i][0]
+                let y = positionList[i][1]
+                if(blockGraph[x][y]===1){
+                    over()
+                    alert('游戏结束')
+                    return true
+                }
+            }
+            return false
+        }
+        function drawGraphList(){
+            let graphList = []
+            for(let i = 0;i< blockGraph.length;i++){
+                for(let j =0;j< blockGraph[i].length;j++){
+                    if(blockGraph[i][j]===1){
+                        graphList.push([i,j])
+                    }
+                }
+            }
+            drawGraph(graphList)
+            myGameArea.clear1();
+
+        }
+        function isComplexData (data) {
+            if(data===null||data===undefined){
+                return false
+            }
+            let flag = data.constructor===Array||data.constructor===Object
+            return flag
+        }
+    
+        function deepCopy (data) {
+            if(!isComplexData (data)){
+                return data
+            }
+            let result = null
+            if(data.constructor===Array){
+                result = []
+            }else{
+                result = {}
+            }
+            for(let i in data){
+                result[i] = deepCopy (data[i])
+            }
+            return result
+        }
+    
+        function move(direct){
+            clearGraph(CGraphPositionList)
+            CGraphPositionList = movePosition(CGraphPositionList,direct)
+            if(restartFlag){
+                drawGraphList(blockGraph)
+
+            }else{
+                drawGraph(CGraphPositionList)
+                
+            }
+        }
+        function transform (curtype) {
+            let checkArr = deepCopy(CGraphPositionList)
+            if(transformNum>=3){
+                transformNum = 0
+            }else{
+                transformNum++
+            }
+            switch(curtype){
+                case 1:
+                    caseOne(checkArr)
+                    break;
+                case 2:
+                    caseTwo(checkArr)
+                    break;
+                case 3:
+                    caseThree(checkArr)
+                    break;
+                case 4:
+                    caseFour(checkArr)
+                    break;
+                case 5:
+                    caseFive(checkArr)
+                    break;
+                case 6:
+                    caseSix(checkArr)
+                    break;
+                case 7:
+                    caseSeven(checkArr)
+                    break;
+            }
+            //start check outside
+            let outflag = false
+            let xArr = checkArr.map((item)=>{
+              return  item[0]
+            })
+            let yArr = checkArr.map((item)=>{
+              return  item[1]
+            })
+            for(let item of xArr){
+                if(isOut(item,0)){
+                    outflag = true
+                }
+            }
+            for(let item of yArr){
+                if(isOut(item,1)){
+                    outflag = true
+                }
+            }
+            if(outflag){
+                if(transformNum<=0){
+                    transformNum = 3
+                }else{
+                    transformNum--
+                }
+                return
+            }
+            //end check
+            if(!checkTranfromTouchBlock(checkArr)){
+                    if(transformNum<=0){
+                        transformNum = 3
+                    }else{
+                        transformNum--
+                    }
+                    return
+            }else{
+                clearGraph(CGraphPositionList)
+                CGraphPositionList = checkArr
+                drawGraph(CGraphPositionList)
+            }
+        }
+        function checkTranfromTouchBlock(checkArr){
+            let changeFlag = true
+            for(let item of checkArr){
+                if(isTouchOtherBlock(item)){
+                    changeFlag = false
+                }
+            }
+            return changeFlag
+        }
+        function caseOne(checkarr){
+            switch(transformNum){
+                case 0:
+                    checkarr[0][0]=checkarr[0][0]+2
+                    checkarr[1][0]=checkarr[1][0]-1
+                    checkarr[1][1]=checkarr[1][1]-1
+                    checkarr[3][0]=checkarr[3][0]+1
+                    checkarr[3][1]=checkarr[3][1]+1
+                    break;
+                case 1:
+                    checkarr[0][1]=checkarr[0][1]+2
+                    checkarr[1][0]=checkarr[1][0]+1
+                    checkarr[1][1]=checkarr[1][1]-1
+                    checkarr[3][0]=checkarr[3][0]-1
+                    checkarr[3][1]=checkarr[3][1]+1
+                    break;
+                case 2:
+                    checkarr[0][0]=checkarr[0][0]-2
+                    checkarr[1][0]=checkarr[1][0]+1
+                    checkarr[1][1]=checkarr[1][1]+1
+                    checkarr[3][0]=checkarr[3][0]-1
+                    checkarr[3][1]=checkarr[3][1]-1
+                    break;
+                case 3:
+                    checkarr[0][1]=checkarr[0][1]-2
+                    checkarr[1][0]=checkarr[1][0]-1
+                    checkarr[1][1]=checkarr[1][1]+1
+                    checkarr[3][0]=checkarr[3][0]+1
+                    checkarr[3][1]=checkarr[3][1]-1
+                    break;
+            }
+        }
+        function caseTwo(checkarr){
+            switch(transformNum){
+                case 0:
+                    checkarr[0][1]=checkarr[0][1]-2
+                    checkarr[1][0]=checkarr[1][0]-1
+                    checkarr[1][1]=checkarr[1][1]-1
+                    checkarr[3][0]=checkarr[3][0]+1
+                    checkarr[3][1]=checkarr[3][1]+1
+                    break;
+                case 1:
+                    checkarr[0][0]=checkarr[0][0]+2
+                    checkarr[1][0]=checkarr[1][0]+1
+                    checkarr[1][1]=checkarr[1][1]-1
+                    checkarr[3][0]=checkarr[3][0]-1
+                    checkarr[3][1]=checkarr[3][1]+1
+                    break;
+                case 2:
+                    checkarr[0][1]=checkarr[0][1]+2
+                    checkarr[1][0]=checkarr[1][0]+1
+                    checkarr[1][1]=checkarr[1][1]+1
+                    checkarr[3][0]=checkarr[3][0]-1
+                    checkarr[3][1]=checkarr[3][1]-1
+                    break;
+                case 3:
+                    checkarr[0][0]=checkarr[0][0]-2
+                    checkarr[1][0]=checkarr[1][0]-1
+                    checkarr[1][1]=checkarr[1][1]+1
+                    checkarr[3][0]=checkarr[3][0]+1
+                    checkarr[3][1]=checkarr[3][1]-1
+                    break;
+            }
+        }
+        function caseThree(checkarr){
+            if(transformNum%2!==0){
+                checkarr[0][0]=checkarr[0][0]+1
+                checkarr[0][1]=checkarr[0][1]+1
+                checkarr[1][1]=checkarr[1][1]+2
+                checkarr[2][0]=checkarr[2][0]+1
+                checkarr[2][1]=checkarr[2][1]-1
+            }else{
+                checkarr[0][0]=checkarr[0][0]-1
+                checkarr[0][1]=checkarr[0][1]-1
+                checkarr[1][1]=checkarr[1][1]-2
+                checkarr[2][0]=checkarr[2][0]-1
+                checkarr[2][1]=checkarr[2][1]+1
+            }
+        }
+    
+        function caseFour(checkarr){
+            if(transformNum%2!==0){
+                checkarr[0][0]=checkarr[0][0]+2
+                checkarr[1][0]=checkarr[1][0]+1
+                checkarr[1][1]=checkarr[1][1]+1
+                checkarr[3][0]=checkarr[3][0]-1
+                checkarr[3][1]=checkarr[3][1]+1
+            }else{
+                checkarr[0][0]=checkarr[0][0]-2
+                checkarr[1][0]=checkarr[1][0]-1
+                checkarr[1][1]=checkarr[1][1]-1
+                checkarr[3][0]=checkarr[3][0]+1
+                checkarr[3][1]=checkarr[3][1]-1
+            }
+        }
+        function caseFive(checkarr){
+            switch(transformNum){
+                case 0:
+                    checkarr[0][0]=checkarr[0][0]+1
+                    checkarr[0][1]=checkarr[0][1]-1
+                    checkarr[1][0]=checkarr[1][0]-1
+                    checkarr[1][1]=checkarr[1][1]-1
+                    checkarr[3][0]=checkarr[3][0]+1
+                    checkarr[3][1]=checkarr[3][1]+1
+                    break;
+                case 1:
+                    checkarr[0][0]=checkarr[0][0]+1
+                    checkarr[0][1]=checkarr[0][1]+1
+                    checkarr[1][0]=checkarr[1][0]+1
+                    checkarr[1][1]=checkarr[1][1]-1
+                    checkarr[3][0]=checkarr[3][0]-1
+                    checkarr[3][1]=checkarr[3][1]+1
+                    break;
+                case 2:
+                    checkarr[0][0]=checkarr[0][0]-1
+                    checkarr[0][1]=checkarr[0][1]+1
+                    checkarr[1][0]=checkarr[1][0]+1
+                    checkarr[1][1]=checkarr[1][1]+1
+                    checkarr[3][0]=checkarr[3][0]-1
+                    checkarr[3][1]=checkarr[3][1]-1
+                    break;
+                case 3:
+                    checkarr[0][0]=checkarr[0][0]-1
+                    checkarr[0][1]=checkarr[0][1]-1
+                    checkarr[1][0]=checkarr[1][0]-1
+                    checkarr[1][1]=checkarr[1][1]+1
+                    checkarr[3][0]=checkarr[3][0]+1
+                    checkarr[3][1]=checkarr[3][1]-1
+                    break;
+            }
+        }
+        function caseSix(checkarr){
+            return
+        }
+        function  caseSeven(checkarr){
+            if(transformNum%2!==0){
+                checkarr[0][0]=checkarr[0][0]+2
+                checkarr[0][1]=checkarr[0][1]-2
+                checkarr[1][0]=checkarr[1][0]+1
+                checkarr[1][1]=checkarr[1][1]-1
+                checkarr[3][0]=checkarr[3][0]-1
+                checkarr[3][1]=checkarr[3][1]+1
+            }else{
+                checkarr[0][0]=checkarr[0][0]-2
+                checkarr[0][1]=checkarr[0][1]+2
+                checkarr[1][0]=checkarr[1][0]-1
+                checkarr[1][1]=checkarr[1][1]+1
+                checkarr[3][0]=checkarr[3][0]+1
+                checkarr[3][1]=checkarr[3][1]-1
+            }
+        }
+        function setTimer(speed) {
+            clearInterval(timer)
+            timer = setInterval(()=>{
+                move('down')
+                if(restartFlag){
+                    newBlock()
+                }
+            },speed)
+        }
+        
+        function newBlock(){
+            
+            restartFlag = false
+            CGraphPositionList = randomRectShape()
+            drawGraph(CGraphPositionList)
+            myGameArea.clear1();
+            drawGraph1(positionList1)
+            let overflag = checkOver(CGraphPositionList)
+            if(overflag){
+                return
+            }
+            speed=100;
+            setTimer(speed)
+        }
+        function setTimer1(speed) {
+            clearInterval(timer)
+            timer = setInterval(()=>{
+                move('down')
+                if(restartFlag){
+                    newBlock1()
+                }
+            },speed)
+        }
+        function newBlock1(){
+            restartFlag = false
+            CGraphPositionList = randomRectShape()
+            drawGraph(CGraphPositionList)
+            myGameArea.clear1();
+            drawGraph1(positionList1)
+            let overflag = checkOver(CGraphPositionList)
+            if(overflag){
+                return
+            }
+            speed=400;
+            setTimer1(speed)
+        }
+        function setTimer2(speed) {
+            clearInterval(timer)
+            timer = setInterval(()=>{
+                move('down')
+                if(restartFlag){
+                    newBlock2()
+                }
+            },speed)
+        }
+        function newBlock2(){
+            restartFlag = false
+            CGraphPositionList = randomRectShape()
+            drawGraph(CGraphPositionList)
+            myGameArea.clear1();
+            drawGraph1(positionList1)
+            let overflag = checkOver(CGraphPositionList)
+            if(overflag){
+                return
+            }
+            speed=1000;
+            setTimer2(speed)
+        }
+        let pauseFlag = false
+        function start() {
+            select();
+            if(r==0)
+            {
+            grade=0
+          flagp=3;
+            newBlock()
+            }
+            
+          
+        
+        }
+        function start1() {
+            select();
+            if(r==0)
+            {
+            grade=0
+            flagp=2
+          
+             newBlock1()
+            }
+        
+        
+      }
+      function start2() {
+          select()
+          if(r==0)
+          {
+          grade=0
+          flagp=1
+         select();
+         newBlock2()
+          }
+       
+       
+      }
+        function over() {
+            grade = 0
+            CGraphPositionList=[];
+            document.getElementById("text").innerHTML="当前分数："+grade
+            clearInterval(timer)
+            myGameArea.clear();
+            myGameArea.clear1();
+        
+       
+        curtype = undefined
+         transformNum = 0
+           for(let i = 0;i< blockGraph.length;i++){
+                for(let j =0;j< blockGraph[i].length;j++){
+                    blockGraph[i][j]=undefined;
+                    r=0
+                }
+            }
+        
+          
+         
+        
+
+           
+        }
+        let flagp;
+        function moveup()
+        { transform (curtype);
+
+        }
+        function pause()
+        {
+            //pauseFlag=!pauseFlag;
+            clearInterval(timer)
+        }
+        function next()
+        {
+            if(flagp==1)
+            {
+                setTimer2(speed)
+            }
+            else if(flagp==2)
+            {
+                setTimer1(speed)
+            }
+            else if(flagp==3)
+            {
+                setTimer(speed)
+            }
+        }
+        let r=0
+        function select()
+        {
+          
+            for(let i = 0;i< CGraphPositionList.length;i++){
+                for(let j =0;j< CGraphPositionList[i].length;j++){
+                   if(CGraphPositionList[i][j]!=undefined)
+                   r=1;
+                        
+
+                }
+            }
+            if(r==1)
+            alert("您已开始游戏，若想重新开始请选择重新开始按钮")
+            
+
+        }
+       
+        
+            document.addEventListener('keydown',(event)=>{
+            if(event.keyCode===37){
+                move('left')
+            }else if(event.keyCode===39){
+                move('right')
+            }else if(event.keyCode===40){
+                speed=30
+                if(flagp==1)
+                setTimer2(speed)
+                if(flagp==2)
+                setTimer1(speed)
+                if(flagp==3)
+                setTimer(speed)
+            }else if(event.keyCode===32){
+                pauseFlag = !pauseFlag
+                if(pauseFlag){
+                    pause()
+                }else{
+                    if(flagp==1)
+                {
+                speed=1000
+                setTimer2(speed)
+                }
+                if(flagp==2)
+                {
+                speed=400
+                setTimer1(speed)
+                }
+                if(flagp==3)
+                {
+                speed=100
+                setTimer(speed)
+                }
+                }
+            }else if(event.keyCode===38){
+                // clearGraph(CGraphPositionList)
+                transform (curtype)
+            }
+        })
+        document.addEventListener('keyup',(event)=>{
+            if(event.keyCode===40){
+                if(flagp==1)
+                {
+                speed=1000
+                setTimer2(speed)
+                }
+                if(flagp==2)
+                {
+                speed=400
+                setTimer1(speed)
+                }
+                if(flagp==3)
+                {
+                speed=100
+                setTimer(speed)
+                }
+               
+            }
+        })
+      
+
+       
+    
+       
+
+      
+    
+    </script>
+</body>
+
+</html>
